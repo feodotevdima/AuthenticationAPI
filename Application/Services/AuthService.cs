@@ -146,23 +146,29 @@ namespace Application.Services
         public async Task<JwtTokenModel?> RefreshTokensAsync(string refreshToken)
         {
             (var userId, var sessionId) = ExtractClaimsFromToken(refreshToken);
+            Guid.TryParse(sessionId, out var newId);
 
-            var newAccessToken = GenerateAccessToken(userId, sessionId);
-            (var newRefreshToken, var newRefreshTokenExpiration) = GenerateRefreshToken(userId, sessionId);
-
-            Guid.TryParse(sessionId, out var newSessionId);
-            Guid.TryParse(userId, out var newUserId);
-
-            JwtTokenModel tokens = new JwtTokenModel
+            var session= await _sessionRepository.GetSessionByIdAsync(newId);
+            if (await ValidateRefreshTokenAsync(newId) && (session.RefreshToken==refreshToken))
             {
-                Id = newSessionId,
-                UserId = newUserId,
-                AccessToken = newAccessToken,
-                RefreshToken = newRefreshToken,
-                RefreshTokenExpiration = newRefreshTokenExpiration
-            };
-            var newTokens = await _sessionRepository.UpdateSessionAsync(tokens);
-            return tokens;
+                var newAccessToken = GenerateAccessToken(userId, sessionId);
+                (var newRefreshToken, var newRefreshTokenExpiration) = GenerateRefreshToken(userId, sessionId);
+
+                Guid.TryParse(sessionId, out var newSessionId);
+                Guid.TryParse(userId, out var newUserId);
+
+                JwtTokenModel tokens = new JwtTokenModel
+                {
+                    Id = newSessionId,
+                    UserId = newUserId,
+                    AccessToken = newAccessToken,
+                    RefreshToken = newRefreshToken,
+                    RefreshTokenExpiration = newRefreshTokenExpiration
+                };
+                var newTokens = await _sessionRepository.UpdateSessionAsync(tokens);
+                return tokens;
+            }
+            return null;
         }
     }
 }
