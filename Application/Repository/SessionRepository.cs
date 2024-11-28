@@ -1,11 +1,12 @@
-﻿using Core.Models;
+﻿using Application.Interfeses;
+using Core.Models;
 using Microsoft.EntityFrameworkCore;
 using Presistence;
 using Presistence.Contracts;
 
 namespace Application.Repository
 {
-    public class SessionRepository
+    public class SessionRepository : ISessionRepository
     {
         public async Task<JwtTokenModel?> AddSessionAsync(CreateSession session)
         {

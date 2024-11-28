@@ -1,7 +1,9 @@
+using Application.Interfeses;
 using Application.Repository;
 using Application.Services;
 using Core.Models;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json.Linq;
 using Presistence.Contracts;
 
 namespace AuthenticationAPI.Controllers
@@ -11,13 +13,19 @@ namespace AuthenticationAPI.Controllers
     public class AuthController : ControllerBase
     {
 
-        private readonly AuthService _authService;
-        private readonly SessionRepository _sessionRepository;
+        private readonly IAuthService _authService;
+        private readonly ISessionRepository _sessionRepository;
 
-        public AuthController(AuthService authService, SessionRepository sessionRepository)
+        public AuthController(IAuthService authService, ISessionRepository sessionRepository)
         {
             _authService = authService;
             _sessionRepository = sessionRepository;
+        }
+
+        [HttpGet]
+        public async Task<IResult> SessionsAsync()
+        {
+            return Results.Json(await _sessionRepository.GetSessionsAsync());
         }
 
         [HttpDelete("logout")]

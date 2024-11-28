@@ -7,16 +7,22 @@ using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Text;
 using Application.Repository;
+using Application.Interfeses;
+using System.Security.Cryptography;
 
 namespace Application.Services
 {
-    public class AuthService
+    public class AuthService : IAuthService
     {
+        private readonly int keySize = 64;
+        private readonly int iterations = 350000;
+        private readonly HashAlgorithmName hashAlgorithm = HashAlgorithmName.SHA512;
+
         private readonly JwtSettingsModel _jwtSettingsModel;
         private readonly HttpClient _httpClient;
-        private readonly SessionRepository _sessionRepository;
+        private readonly ISessionRepository _sessionRepository;
 
-        public AuthService(IOptions<JwtSettingsModel> jwtSettings, HttpClient httpClient, SessionRepository sessionRepository)
+        public AuthService(IOptions<JwtSettingsModel> jwtSettings, HttpClient httpClient, ISessionRepository sessionRepository)
         {
             _jwtSettingsModel = jwtSettings.Value;
             _httpClient = httpClient;
@@ -31,7 +37,15 @@ namespace Application.Services
                 if (response.IsSuccessStatusCode)
                 {
                     var user = await response.Content.ReadFromJsonAsync<UserModel>();
-                    if ((user != null) && (user.Password == userPassword))
+
+                    var hash = Rfc2898DeriveBytes.Pbkdf2(
+                        Encoding.UTF8.GetBytes(userPassword),
+                        user.Salt,
+                        iterations,
+                        hashAlgorithm,
+                        keySize);
+
+                    if ((user != null) && (System.Text.Encoding.UTF8.GetString(hash) == System.Text.Encoding.UTF8.GetString(user.Password)))
                     {
                         JwtTokenModel? session = await _sessionRepository.AddSessionAsync(user.Id);
 

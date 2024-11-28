@@ -1,3 +1,4 @@
+using Application.Interfeses;
 using Application.Repository;
 using Application.Services;
 using Core.Models;
@@ -10,8 +11,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddHttpClient();
 builder.Services.Configure<JwtSettingsModel>(builder.Configuration.GetSection("JwtSettings"));
 
-builder.Services.AddTransient<AuthService>();
-builder.Services.AddTransient<SessionRepository>();
+builder.Services.AddTransient<IAuthService, AuthService>();
+builder.Services.AddTransient<ISessionRepository, SessionRepository>();
 
 builder.Services.AddAuthentication(options =>
 {

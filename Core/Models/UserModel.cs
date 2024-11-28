@@ -10,12 +10,14 @@ namespace Core.Models
     {
         public Guid Id { get; set; }
         public string Email { get; set; }
-        public string Password { get; set; }
+        public byte[] Password { get; set; }
+        public byte[] Salt { get; set; }
 
-        public UserModel(string email, string password)
+        public UserModel(string email, byte[] password, byte[] salt)
         {
             Email = email;
             Password = password;
+            Salt = salt;
         }
     }
 }
