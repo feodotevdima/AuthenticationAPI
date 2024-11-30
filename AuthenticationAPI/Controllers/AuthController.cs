@@ -29,12 +29,14 @@ namespace AuthenticationAPI.Controllers
         }
 
         [HttpDelete("logout")]
-        public async Task<IResult> LogoutAsync([FromBody] string AccessToken)
+        public async Task<IResult> LogoutAsync([FromBody] CreateLogout Token)
         {
-            var session = await _sessionRepository.GetSessionByAccessTokenAsync(AccessToken);
+            Console.WriteLine(Token.AccessToken);
+            Console.WriteLine(34523);
+            var session = await _sessionRepository.GetSessionByAccessTokenAsync(Token.AccessToken);
             if (session != null)
             {
-                (string? userId, string? sessionId) = _authService.ExtractClaimsFromToken(AccessToken);
+                (string? userId, string? sessionId) = _authService.ExtractClaimsFromToken(Token.AccessToken);
                 Guid.TryParse(sessionId, out var newSessionId);
                 var tokens = await _sessionRepository.RemoveSessionAsync(newSessionId);
                 if (tokens != null)
