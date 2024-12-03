@@ -33,14 +33,6 @@ builder.Services.AddAuthentication(options =>
             ValidAudience = jwtSettings.Audience,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Secret))
         };
-        options.Events = new JwtBearerEvents
-        {
-            OnAuthenticationFailed = context =>
-            {
-                Console.WriteLine($"Authentication failed: {context.Exception}");
-                return Task.CompletedTask;
-            }
-        };
     });
 
 builder.Services.AddControllers();
