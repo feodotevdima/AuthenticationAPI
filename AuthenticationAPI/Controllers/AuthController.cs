@@ -28,15 +28,13 @@ namespace AuthenticationAPI.Controllers
             return Results.Json(await _sessionRepository.GetSessionsAsync());
         }
 
-        [HttpDelete("logout")]
-        public async Task<IResult> LogoutAsync([FromBody] CreateLogout Token)
+        [HttpDelete("logout/{token}")]
+        public async Task<IResult> LogoutAsync(string token)
         {
-            Console.WriteLine(Token.AccessToken);
-            Console.WriteLine(34523);
-            var session = await _sessionRepository.GetSessionByAccessTokenAsync(Token.AccessToken);
+            var session = await _sessionRepository.GetSessionByAccessTokenAsync(token);
             if (session != null)
             {
-                (string? userId, string? sessionId) = _authService.ExtractClaimsFromToken(Token.AccessToken);
+                (string? userId, string? sessionId) = _authService.ExtractClaimsFromToken(token);
                 Guid.TryParse(sessionId, out var newSessionId);
                 var tokens = await _sessionRepository.RemoveSessionAsync(newSessionId);
                 if (tokens != null)
@@ -59,8 +57,8 @@ namespace AuthenticationAPI.Controllers
             return Results.Unauthorized();
         }
 
-        [HttpPut("refreshToken")]
-        public async Task<IResult> RefreshAsync([FromBody] string refreshToken)
+        [HttpPut("refreshToken/{refreshToken}")]
+        public async Task<IResult> RefreshAsync(string refreshToken)
         {
             if (string.IsNullOrWhiteSpace(refreshToken))
                 return Results.BadRequest();
